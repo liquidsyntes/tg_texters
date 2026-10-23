@@ -138,7 +138,15 @@ def _opencode(model: str, source: str, target: str, fragments: list[str]) -> str
         if version == "v1":
             config = {"agent": {"translator": {"description": "Translate supplied text only", "mode": "primary", "permission": {"*": "deny"}}}}
         elif version == "v2":
-            config = {"agents": {"translator": {"description": "Translate supplied text only", "mode": "primary", "permissions": [{"action": "*", "resource": "*", "effect": "deny"}]}}}
+            blocked = ("shell", "edit", "glob", "grep", "list", "webfetch", "websearch",
+                       "subagent", "skill", "execute", "external_directory", "lsp")
+            config = {"agents": {"translator": {
+                "description": "Translate supplied text only", "mode": "primary",
+                # In V2.1.4, denying read as a permission breaks Console auth.
+                # Disable the model's read tool separately instead.
+                "tools": {"read": False},
+                "permissions": [{"action": action, "resource": "*", "effect": "deny"} for action in blocked],
+            }}}
         else:
             raise TranslationError("OPENCODE_VERSION должен быть v1 или v2")
         command = [executable, "run", "--format", "json", "--agent", "translator", "--model", model,

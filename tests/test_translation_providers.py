@@ -11,7 +11,9 @@ class ProviderTests(unittest.TestCase):
     def test_opencode_uses_isolated_agent_and_reads_json_events(self):
         def fake_run(command, **kwargs):
             config = json.loads(kwargs["env"]["OPENCODE_CONFIG_CONTENT"])
-            self.assertEqual(config["agents"]["translator"]["permissions"][0]["effect"], "deny")
+            agent = config["agents"]["translator"]
+            self.assertFalse(agent["tools"]["read"])
+            self.assertIn("shell", [item["action"] for item in agent["permissions"]])
             self.assertIn("--standalone", command)
             self.assertIn("--format", command)
             self.assertIn("provider/model", command)
