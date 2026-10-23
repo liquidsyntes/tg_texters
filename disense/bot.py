@@ -169,7 +169,7 @@ def prepare(config: Config, telegram: Telegram, store: Store, identifier: str, s
         body_override=translated_body, assets_prefix=f"./{assets_name}/"
     ), encoding="utf-8")
     assets_dir.mkdir(parents=True, exist_ok=True)
-    for filename in ("style.css", "favicon.svg", "article.js"):
+    for filename in ("style.css", "brand-logo.png", "article.js"):
         shutil.copy2(ROOT / filename, assets_dir / filename)
     shutil.copytree(ROOT / "fonts", assets_dir / "fonts", dirs_exist_ok=True)
     shutil.make_archive(str(directory.parent / "preview"), "zip", root_dir=directory)
@@ -239,7 +239,7 @@ def _upload_sftp(config: Config, source: Path, identifier: str) -> None:
     assets = source / assets_name
     remote_dir = config.sftp_remote_dir.rstrip("/")
     commands = [f"cd {quoted(remote_dir)}", f"mkdir {quoted(assets_name)}", f"cd {quoted(assets_name)}"]
-    for filename in ("style.css", "favicon.svg"):
+    for filename in ("style.css", "brand-logo.png", "article.js"):
         commands.append(f"put {quoted(str(assets / filename))} {quoted(filename)}")
     commands.extend(["mkdir fonts", "cd fonts"])
     for font in sorted((assets / "fonts").iterdir()):

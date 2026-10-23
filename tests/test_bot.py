@@ -56,10 +56,13 @@ class BotTests(unittest.TestCase):
         self.assertIn("Привет.", page)
         self.assertIn('href="./draft01-uk.html"', page)
         self.assertIn('href="./draft01-assets/style.css"', page)
+        self.assertIn('src="./draft01-assets/brand-logo.png"', page)
         self.assertIn('src="draft01-assets/images/01.jpg"', page)
+        self.assertTrue((self.store.path(self.identifier) / "site" / "draft01-assets" / "brand-logo.png").is_file())
         self.assertTrue((self.store.path(self.identifier) / "site" / "draft01-assets" / "images" / "01.jpg").is_file())
         with ZipFile(self.store.path(self.identifier) / "preview.zip") as archive:
             self.assertIn("draft01-assets/images/01.jpg", archive.namelist())
+            self.assertIn("draft01-assets/brand-logo.png", archive.namelist())
         Path(self.config.publish_target).mkdir()
         published = publish(self.config, self.store, self.identifier)
         self.assertEqual(published["status"], "published")
@@ -112,6 +115,8 @@ class BotTests(unittest.TestCase):
             batch = Path(command[command.index("-b") + 1]).read_text()
             self.assertIn('cd "/var/www/static"', batch)
             self.assertIn('mkdir "draft01-assets"', batch)
+            self.assertIn('put "' + str(self.store.path(self.identifier) / "site" / "draft01-assets" / "brand-logo.png"), batch)
+            self.assertIn('put "' + str(self.store.path(self.identifier) / "site" / "draft01-assets" / "article.js"), batch)
             self.assertLess(batch.index('put "' + str(self.store.path(self.identifier) / "site" / "draft01-assets" / "style.css")),
                             batch.index('put "' + str(self.store.path(self.identifier) / "site" / "draft01-ru.html")))
             self.assertIn('mv "draft01-ru.html.part" "draft01-ru.html"', batch)

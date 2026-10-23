@@ -220,14 +220,14 @@ def render_page(
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#15110f">
   <title>{title_html} · Discipline of Senses</title>
-  <link rel="icon" href="{escape(assets_prefix, quote=True)}favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="{escape(assets_prefix, quote=True)}brand-logo.png" type="image/png">
   <link rel="alternate" hreflang="{other_language}" href="./{escape(other_name, quote=True)}">
   <link rel="stylesheet" href="{escape(assets_prefix, quote=True)}style.css">
 {script.rstrip()}
 </head>
 <body>
   <header class="site-header">
-    <div class="brand"><span class="brand-mark" aria-hidden="true">DS</span><span class="brand-name">Discipline of Senses</span></div>
+    <div class="brand"><span class="brand-mark"><img src="{escape(assets_prefix, quote=True)}brand-logo.png" alt="" width="37" height="37"></span><span class="brand-name">Discipline of Senses</span></div>
     <nav class="languages" aria-label="{nav_label}">
       <span aria-current="page">{current_label}</span><a href="./{escape(other_name, quote=True)}" hreflang="{other_language}" lang="{other_language}">{alternate_label}</a>
     </nav>

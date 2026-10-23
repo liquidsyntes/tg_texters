@@ -18,6 +18,8 @@ class ArticleTests(unittest.TestCase):
         page = render_page(self.blocks, "uk", {"large": "images/01.jpg"}, "ru.html")
         self.assertIn('<html lang="uk">', page)
         self.assertIn('href="./ru.html"', page)
+        self.assertIn('<img src="./brand-logo.png" alt="" width="37" height="37">', page)
+        self.assertIn('rel="icon" href="./brand-logo.png"', page)
         self.assertIn('<strong>друже</strong>', page)
         self.assertIn('src="images/01.jpg" alt="Підпис"', page)
         self.assertEqual(page.count("<h1>"), 1)
