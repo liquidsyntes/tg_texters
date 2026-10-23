@@ -80,6 +80,24 @@ class BotTests(unittest.TestCase):
         bot.inline({"id": "q2", "from": {"id": 999}, "query": self.identifier})
         self.assertEqual(self.telegram.calls, [])
 
+    @patch("disense.bot.secrets.token_urlsafe", return_value="buttonDraft")
+    def test_rich_article_with_button_is_accepted(self, _identifier):
+        bot = Bot(self.config)
+        bot.api = self.telegram
+        bot.message({
+            "from": {"id": 123}, "chat": {"type": "private"},
+            "rich_message": {"blocks": [
+                {"type": "heading", "size": 1, "text": "Стаття"},
+                {"type": "paragraph", "text": ["Текст ", {"type": "button", "button": {
+                    "text": "Читати", "url": "https://example.com/article"
+                }}]},
+                {"type": "buttons", "buttons": [{"text": "Сайт", "url": "https://example.com"}]},
+            ]},
+        })
+        self.assertEqual(self.store.load("buttonDraft")["status"], "language")
+        self.assertEqual(self.telegram.calls[-1][0], "sendMessage")
+        self.assertIn("inline_keyboard", self.telegram.calls[-1][1]["reply_markup"])
+
     @patch("disense.bot.translate_fragments")
     def test_sftp_upload_uses_pinned_key_and_places_pages_last(self, translate):
         translate.return_value = ["<h2>О канале</h2>", "<p>Привет.</p>",

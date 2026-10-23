@@ -1,6 +1,6 @@
 import unittest
 
-from disense.article import UnsupportedArticle, article_blocks, inline_blocks, render_block, render_page
+from disense.article import UnsupportedArticle, article_blocks, inline_blocks, plain_text, render_block, render_page
 from disense.translation import TranslationError, validate_translation
 
 
@@ -25,6 +25,30 @@ class ArticleTests(unittest.TestCase):
     def test_telegram_photo_can_be_sent_in_inline_article(self):
         outgoing = inline_blocks(self.blocks)
         self.assertEqual(outgoing[2]["photo"], {"type": "photo", "media": "large"})
+
+    def test_inline_and_row_buttons_are_preserved(self):
+        inline = {"type": "button", "button": {"text": "Читати", "url": "https://example.com/read"}}
+        row = {"type": "buttons", "align": "center", "buttons": [
+            {"text": "Сайт", "url": "https://example.com/?a=1&b=2"},
+            {"text": "Копіювати", "copy_text": {"text": "Текст & ще"}},
+        ]}
+        blocks = [{"type": "paragraph", "text": ["Далі: ", inline]}, row]
+        page = render_page(blocks, "uk", {}, "ru.html")
+        self.assertIn('class="article-button article-button-inline" href="https://example.com/read"', page)
+        self.assertIn('article-button-row-center', page)
+        self.assertIn('href="https://example.com/?a=1&amp;b=2"', page)
+        self.assertIn('data-copy-text="Текст &amp; ще"', page)
+        self.assertIn('src="./article.js"', page)
+        self.assertEqual(plain_text(inline), "Читати")
+        self.assertEqual(inline_blocks(blocks)[1], row)
+
+    def test_telegram_only_button_and_unsafe_url_fail_closed(self):
+        with self.assertRaisesRegex(UnsupportedArticle, "только в Telegram"):
+            render_block({"type": "paragraph", "text": {"type": "button", "button": {
+                "text": "Дія", "callback_data": "run"
+            }}}, {})
+        with self.assertRaises(UnsupportedArticle):
+            render_block({"type": "buttons", "buttons": [{"text": "Погано", "url": "javascript:alert(1)"}]}, {})
 
     def test_unsafe_link_and_unsupported_block_fail_closed(self):
         with self.assertRaises(UnsupportedArticle):

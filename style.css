@@ -157,6 +157,29 @@ h1 {
 .article-body strong { color: #f2e4d8; font-weight: 400; }
 .article-body em { font-style: italic; }
 .article-body a { color: var(--accent); text-underline-offset: 4px; }
+.article-button-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 1.5em 0; }
+.article-button-row-center { justify-content: center; }
+.article-button-row-right { justify-content: flex-end; }
+.article-body .article-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 8px 15px;
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: .82em;
+  line-height: 1.25;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+.article-body .article-button:hover { background: #392a23; }
+.article-body .article-button-inline { min-height: 0; padding: 2px 8px; vertical-align: baseline; }
+.article-body .article-button-disabled { border-color: var(--line); color: var(--muted); cursor: default; }
 .article-body h2, .article-body h3 { margin: 1.8em 0 .7em; font-weight: 400; line-height: 1.25; }
 .article-body h2 { font-size: 1.4em; }
 .article-body h3 { font-size: 1.2em; }

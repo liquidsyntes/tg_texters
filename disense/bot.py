@@ -169,7 +169,7 @@ def prepare(config: Config, telegram: Telegram, store: Store, identifier: str, s
         body_override=translated_body, assets_prefix=f"./{assets_name}/"
     ), encoding="utf-8")
     assets_dir.mkdir(parents=True, exist_ok=True)
-    for filename in ("style.css", "favicon.svg"):
+    for filename in ("style.css", "favicon.svg", "article.js"):
         shutil.copy2(ROOT / filename, assets_dir / filename)
     shutil.copytree(ROOT / "fonts", assets_dir / "fonts", dirs_exist_ok=True)
     shutil.make_archive(str(directory.parent / "preview"), "zip", root_dir=directory)

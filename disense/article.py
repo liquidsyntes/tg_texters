@@ -27,6 +27,8 @@ def plain_text(value: object) -> str:
             return str(value.get("alternative_text", ""))
         if value.get("type") == "mathematical_expression":
             return str(value.get("expression", ""))
+        if value.get("type") == "button":
+            return plain_text((value.get("button") or {}).get("text", ""))
         return plain_text(value.get("text", ""))
     return ""
 
@@ -36,6 +38,30 @@ def _safe_url(url: str) -> str:
     if parts.scheme not in {"http", "https", "mailto", "tel", "tg"}:
         raise UnsupportedArticle("Ссылка в статье использует неподдерживаемый протокол")
     return escape(url, quote=True)
+
+
+def render_button(button: dict, *, inline: bool = False) -> str:
+    label = render_text(button.get("text", ""))
+    if not plain_text(button.get("text", "")).strip():
+        raise UnsupportedArticle("Кнопка без подписи не поддерживается")
+    class_name = "article-button article-button-inline" if inline else "article-button"
+    actions = [key for key in (
+        "url", "copy_text", "disabled", "callback_data", "web_app", "login_url",
+        "switch_inline_query", "switch_inline_query_current_chat", "switch_inline_query_chosen_chat",
+    ) if key in button]
+    if len(actions) != 1:
+        raise UnsupportedArticle("У кнопки должно быть ровно одно действие")
+    action = actions[0]
+    if action == "url":
+        return f'<a class="{class_name}" href="{_safe_url(str(button["url"]))}">{label}</a>'
+    if action == "copy_text":
+        payload = (button.get("copy_text") or {}).get("text")
+        if not isinstance(payload, str) or not 1 <= len(payload) <= 256:
+            raise UnsupportedArticle("Неверный текст кнопки копирования")
+        return f'<button class="{class_name}" type="button" data-copy-text="{escape(payload, quote=True)}">{label}</button>'
+    if action == "disabled":
+        return f'<span class="{class_name} article-button-disabled" aria-disabled="true">{label}</span>'
+    raise UnsupportedArticle(f"Кнопка с действием {action!r} работает только в Telegram")
 
 
 def render_text(value: object) -> str:
@@ -59,6 +85,8 @@ def render_text(value: object) -> str:
         return f'<a href="{_safe_url(scheme + ":" + str(value.get(key, "")))}">{render_text(value.get("text", ""))}</a>'
     if kind == "custom_emoji":
         return escape(str(value.get("alternative_text", "")))
+    if kind == "button":
+        return render_button(value.get("button") or {}, inline=True)
     if kind in {"mention", "hashtag", "cashtag", "bot_command", "date_time", "text_mention"}:
         return render_text(value.get("text", ""))
     raise UnsupportedArticle(f"Форматирование {kind!r} пока не поддерживается")
@@ -106,6 +134,15 @@ def render_block(block: dict, images: dict[str, str]) -> str:
         return f'<h{size}>{render_text(block.get("text", ""))}</h{size}>'
     if kind == "divider":
         return "<hr>"
+    if kind == "buttons":
+        align = block.get("align", "left")
+        if align not in {"left", "center", "right"}:
+            raise UnsupportedArticle("Неизвестное выравнивание кнопок")
+        buttons = block.get("buttons") or []
+        if not 1 <= len(buttons) <= 8:
+            raise UnsupportedArticle("В ряду должно быть от 1 до 8 кнопок")
+        content = "".join(render_button(button) for button in buttons)
+        return f'<div class="article-button-row article-button-row-{align}">{content}</div>'
     if kind == "blockquote":
         content = "".join(render_block(item, images) for item in block.get("blocks", []))
         credit = f'<cite>{render_text(block["credit"])}</cite>' if block.get("credit") else ""
@@ -174,6 +211,8 @@ def render_page(
     alternate_label = "UA" if language == "ru" else "RU"
     nav_label = "Язык статьи" if language == "ru" else "Мова статті"
     title_html = escape(title)
+    script = (f'  <script src="{escape(assets_prefix, quote=True)}article.js" defer></script>\n'
+              if 'data-copy-text=' in body else '')
     return f'''<!doctype html>
 <html lang="{language}">
 <head>
@@ -184,6 +223,7 @@ def render_page(
   <link rel="icon" href="{escape(assets_prefix, quote=True)}favicon.svg" type="image/svg+xml">
   <link rel="alternate" hreflang="{other_language}" href="./{escape(other_name, quote=True)}">
   <link rel="stylesheet" href="{escape(assets_prefix, quote=True)}style.css">
+{script.rstrip()}
 </head>
 <body>
   <header class="site-header">
@@ -220,7 +260,7 @@ def inline_blocks(blocks: list[dict]) -> list[dict]:
                      "blocks": inline_blocks(item.get("blocks", []))}
                     for item in block.get("items", [])
                 ]
-        elif kind not in {"paragraph", "heading", "divider", "pullquote", "footer"}:
+        elif kind not in {"paragraph", "heading", "divider", "pullquote", "footer", "buttons"}:
             raise UnsupportedArticle(f"Блок {kind!r} нельзя отправить через inline-режим")
         result.append(block)
     return result
