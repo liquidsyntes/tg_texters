@@ -73,8 +73,16 @@ class BotTests(unittest.TestCase):
         method, params = self.telegram.calls[-1]
         self.assertEqual(method, "answerInlineQuery")
         result = params["results"][0]
-        self.assertEqual(result["input_message_content"]["rich_message"]["blocks"][2]["photo"]["media"], "photo1")
+        blocks = result["input_message_content"]["rich_message"]["blocks"]
+        self.assertEqual(blocks[0], {"type": "paragraph", "text": [
+            {"type": "url", "text": "Читать на русском", "url": published["urls"]["ru"]},
+            " · ",
+            {"type": "url", "text": "Читати українською", "url": published["urls"]["uk"]},
+        ]})
+        self.assertEqual(blocks[1]["text"], "Про канал")
+        self.assertEqual(blocks[3]["photo"]["media"], "photo1")
         self.assertEqual(result["reply_markup"]["inline_keyboard"][0][0]["url"], published["urls"]["ru"])
+        self.assertEqual(result["reply_markup"]["inline_keyboard"][0][1]["url"], published["urls"]["uk"])
 
     def test_other_user_is_ignored(self):
         bot = Bot(self.config)

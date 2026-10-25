@@ -391,8 +391,14 @@ class Bot:
         try:
             draft = self.store.load(identifier)
             if draft.get("status") == "published":
-                blocks = inline_blocks(article_blocks(draft["message"]))
-                title = article_title(blocks, draft["source"])
+                article = inline_blocks(article_blocks(draft["message"]))
+                title = article_title(article, draft["source"])
+                links = {"type": "paragraph", "text": [
+                    {"type": "url", "text": "Читать на русском", "url": draft["urls"]["ru"]},
+                    " · ",
+                    {"type": "url", "text": "Читати українською", "url": draft["urls"]["uk"]},
+                ]}
+                blocks = [links, *article]
                 results = [{"type": "article", "id": identifier, "title": title,
                             "description": "Статья Discipline of Senses с двумя ссылками",
                             "input_message_content": {"rich_message": {"blocks": blocks}},

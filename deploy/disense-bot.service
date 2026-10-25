@@ -1,0 +1,16 @@
+[Unit]
+Description=Discipline of Senses Telegram article bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/mnt/c/disense_template
+EnvironmentFile=/mnt/c/disense_template/.env.local
+Environment=PATH=/home/administrator/.local/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=/usr/bin/python3 -m disense.bot
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target
