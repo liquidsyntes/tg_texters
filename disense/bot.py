@@ -394,9 +394,11 @@ class Bot:
                 article = inline_blocks(article_blocks(draft["message"]))
                 title = article_title(article, draft["source"])
                 links = {"type": "paragraph", "text": [
-                    {"type": "url", "text": "Читать на русском", "url": draft["urls"]["ru"]},
-                    " · ",
-                    {"type": "url", "text": "Читати українською", "url": draft["urls"]["uk"]},
+                    "ви можете читати текст у зручному\nформаті на | ",
+                    {"type": "url", "text": "РУС", "url": draft["urls"]["ru"]},
+                    " | ",
+                    {"type": "url", "text": "УКР", "url": draft["urls"]["uk"]},
+                    " | мовами...",
                 ]}
                 blocks = [links, *article]
                 results = [{"type": "article", "id": identifier, "title": title,

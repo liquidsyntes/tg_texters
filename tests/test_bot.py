@@ -6,6 +6,7 @@ import unittest
 from unittest.mock import patch
 from zipfile import ZipFile
 
+from disense.article import plain_text
 from disense.bot import Bot, Config, Store, _upload_sftp, prepare, publish
 
 
@@ -75,10 +76,14 @@ class BotTests(unittest.TestCase):
         result = params["results"][0]
         blocks = result["input_message_content"]["rich_message"]["blocks"]
         self.assertEqual(blocks[0], {"type": "paragraph", "text": [
-            {"type": "url", "text": "Читать на русском", "url": published["urls"]["ru"]},
-            " · ",
-            {"type": "url", "text": "Читати українською", "url": published["urls"]["uk"]},
+            "ви можете читати текст у зручному\nформаті на | ",
+            {"type": "url", "text": "РУС", "url": published["urls"]["ru"]},
+            " | ",
+            {"type": "url", "text": "УКР", "url": published["urls"]["uk"]},
+            " | мовами...",
         ]})
+        self.assertEqual(plain_text(blocks[0]["text"]),
+                         "ви можете читати текст у зручному\nформаті на | РУС | УКР | мовами...")
         self.assertEqual(blocks[1]["text"], "Про канал")
         self.assertEqual(blocks[3]["photo"]["media"], "photo1")
         self.assertEqual(result["reply_markup"]["inline_keyboard"][0][0]["url"], published["urls"]["ru"])
