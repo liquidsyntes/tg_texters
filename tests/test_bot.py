@@ -76,14 +76,15 @@ class BotTests(unittest.TestCase):
         result = params["results"][0]
         blocks = result["input_message_content"]["rich_message"]["blocks"]
         self.assertEqual(blocks[0], {"type": "paragraph", "text": [
-            "ви можете читати текст у зручному\nформаті на | ",
+            "__________________________\n\nви можете читати текст у зручному\nформаті на | ",
             {"type": "url", "text": "РУС", "url": published["urls"]["ru"]},
             " | ",
             {"type": "url", "text": "УКР", "url": published["urls"]["uk"]},
-            " | мовами...",
+            " | мовами...\n\n__________________________",
         ]})
         self.assertEqual(plain_text(blocks[0]["text"]),
-                         "ви можете читати текст у зручному\nформаті на | РУС | УКР | мовами...")
+                         "__________________________\n\nви можете читати текст у зручному\n"
+                         "форматі на | РУС | УКР | мовами...\n\n__________________________")
         self.assertEqual(blocks[1]["text"], "Про канал")
         self.assertEqual(blocks[3]["photo"]["media"], "photo1")
         self.assertEqual(result["reply_markup"]["inline_keyboard"][0][0]["url"], published["urls"]["ru"])
